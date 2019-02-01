@@ -424,6 +424,16 @@ class test_AbstractTransport:
             sock_mock.gettimeout.assert_called()
             sock_mock.settimeout.assert_not_called()
 
+    def test_set_timeout_ewouldblock_exc(self):
+        # We expect EWOULDBLOCK to be handled as a timeout.
+        with patch.object(self.t, 'sock') as sock_mock:
+            sock_mock.gettimeout.return_value = 3
+            with pytest.raises(socket.timeout):
+                with self.t.having_timeout(5) as actual_sock:
+                    err = socket.error()
+                    err.errno = errno.EWOULDBLOCK
+                    raise err
+
 
 class test_AbstractTransport_connect:
 
